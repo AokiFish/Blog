@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <title>用 asyncio 重构爬虫：6 倍提速背后的三个细节 · LUCA BLOG</title>
+    <meta name="description" content="同样的 2000 个 URL，同步版跑了 11 分钟，异步版 1 分 50 秒。但提速的关键不是换成 aiohttp，而是限流和超时策略。">
+    <meta property="og:title" content="用 asyncio 重构爬虫：6 倍提速背后的三个细节 · LUCA BLOG">
+    <meta property="og:description" content="同样的 2000 个 URL，同步版跑了 11 分钟，异步版 1 分 50 秒。但提速的关键不是换成 aiohttp，而是限流和超时策略。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blog.272314369.xyz">
+    <link rel="canonical" href="https://localhost/posts/asyncio-crawler/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="FastHTML">
+    <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/code.css" type="text/css">
+    <link rel="alternate" type="application/rss+xml" href="/feed.xml" title="LUCA BLOG">
+<script>
+(function(){
+  try{
+    var saved=localStorage.getItem('theme');
+    var mode=saved||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-theme',mode);
+  }catch(e){document.documentElement.setAttribute('data-theme','light');}
+})();
+</script><script>
+(function(){
+  function apply(m){document.documentElement.setAttribute('data-theme',m);try{localStorage.setItem('theme',m);}catch(e){}}
+  var btn=document.getElementById('theme-toggle');
+  if(btn) btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+    apply(cur==='dark'?'light':'dark');
+  });
+})();
+</script>  </head>
+  <body>
+    <header class="site-header">
+      <div class="banner-inner">
+        <nav class="banner-side banner-left">
+<a href="/" class="banner-link">首页</a><a href="/about/" class="banner-link">关于</a>        </nav>
+        <div class="banner-center">
+<a href="/" class="banner-brand" title="返回首页">            <h1 class="banner-title">LUCA BLOG</h1>
+            <p class="banner-subtitle">记录 Python · Web · AI 的学习与实践</p>
+</a>        </div>
+        <div class="banner-side banner-right">
+<form enctype="multipart/form-data" action="/search/" method="get" role="search" class="header-search" title="站内搜索"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>            <input type="search" name="q" placeholder="搜索文章…" aria-label="搜索文章" autocomplete="off" class="header-search-input">
+</form><a href="/feed.xml" class="banner-link rss-link" title="RSS 订阅"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>RSS</a><button type="button" aria-label="切换深色或浅色主题" id="theme-toggle" class="theme-toggle" title="切换深色 / 浅色阅读" name="theme-toggle"><svg class="ico-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="ico-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>        </div>
+      </div>
+    </header>
+    <div class="layout ">
+<main class="main-content">        <div class="content">
+          <div class="post-main">
+            <article class="post-article">
+              <div class="post-head">
+                <div class="post-meta">
+<a href="/categories/python/" class="post-cat">Python</a><span class="dot">·</span><span class="post-date">2026-03-08</span><span class="dot">·</span><span class="post-min">约 2 分钟</span><span class="dot">·</span><span class="post-words">691 字</span>                </div>
+                <h1 class="post-title">用 asyncio 重构爬虫：6 倍提速背后的三个细节</h1>
+              </div>
+              <div class="post-body markdown-body"><p>重构之前，我的爬虫长这样：</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">save</span><span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+</code></pre></div>
+<p>2000 个 URL，耗时 11 分 23 秒。换成 asyncio 之后是 1 分 50 秒。但如果你以为把 <code>requests</code> 换成 <code>aiohttp</code> 就能自动获得这个提升，那多半会失望——我第一版异步代码跑了 9 分钟，几乎没变快。</p>
+<h2 id="细节一并发数不是越大越好">细节一：并发数不是越大越好<a class="anchor" href="#细节一并发数不是越大越好" title="链接到此标题">&para;</a></h2>
+<p>第一版我写了个无限并发：</p>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_all</span><span class="p">(</span><span class="n">urls</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">fetch</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">])</span>
+</code></pre></div>
+<p>2000 个协程同时开，结果是被目标站点限流，大量请求重试，还有一堆连接超时。加上信号量之后立刻正常：</p>
+<div class="highlight"><pre><span></span><code><span class="n">sem</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>   <span class="c1"># 同时最多 20 个</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">sem</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">并发数怎么定</p>
+<p>经验公式：<code>并发数 ≈ 目标站点的响应时间(秒) × 你想要的 QPS</code>。响应时间 0.2 秒、想跑 100 QPS，并发就是 20。比这再高，收益递减而封禁风险上升。</p>
+</div>
+<h2 id="细节二超时要分层设置">细节二：超时要分层设置<a class="anchor" href="#细节二超时要分层设置" title="链接到此标题">&para;</a></h2>
+<p><code>aiohttp</code> 的默认超时是 5 分钟——对爬虫来说等于没有。而且单一 timeout 值没法区分「连不上」和「连上了但一直不发数据」：</p>
+<div class="highlight"><pre><span></span><code><span class="n">timeout</span> <span class="o">=</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientTimeout</span><span class="p">(</span>
+    <span class="n">total</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>        <span class="c1"># 整个请求最长 30 秒</span>
+    <span class="n">connect</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>       <span class="c1"># 建连 5 秒</span>
+    <span class="n">sock_read</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># 连接建立后，10 秒没数据就放弃</span>
+<span class="p">)</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+</code></pre></div>
+<p><code>sock_read</code> 是最容易被忽略的一项。没有它，遇到一个慢速响应的死连接，你的协程能挂好几分钟。</p>
+<h2 id="细节三失败要退避重试但不能无脑重试">细节三：失败要退避重试，但不能无脑重试<a class="anchor" href="#细节三失败要退避重试但不能无脑重试" title="链接到此标题">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_with_retry</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">retries</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">fetch</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientError</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">retries</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>   <span class="c1"># 指数退避 + 抖动</span>
+</code></pre></div>
+<p>两个要点：</p>
+<ul>
+<li><strong>指数退避</strong>：1s、2s、4s，给对方喘息时间</li>
+<li><strong>抖动</strong>：<code>+ random.random()</code> 防止多个协程同时重试，形成新的洪峰</li>
+</ul>
+<h2 id="完整的骨架">完整的骨架<a class="anchor" href="#完整的骨架" title="链接到此标题">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span><span class="o">,</span><span class="w"> </span><span class="nn">aiohttp</span><span class="o">,</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">worker</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="k">await</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">html</span> <span class="o">=</span> <span class="k">await</span> <span class="n">fetch_with_retry</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">html</span><span class="p">:</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">html</span><span class="p">))</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">urls</span><span class="p">):</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">worker</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">results</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+        <span class="k">await</span> <span class="n">queue</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">workers</span><span class="p">:</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<p>用队列而不是 <code>gather</code> 的好处是：<strong>任务进度可见，中途可以持久化，崩了不用从头再来</strong>。</p>
+<h2 id="什么时候别上-asyncio">什么时候别上 asyncio<a class="anchor" href="#什么时候别上-asyncio" title="链接到此标题">&para;</a></h2>
+<p>最后泼一盆冷水。下面这些场景，同步代码反而更合适：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只有几十个请求</td>
+<td>复杂度不划算</td>
+</tr>
+<tr>
+<td>重度 CPU 计算</td>
+<td>asyncio 解决不了 GIL，用多进程</td>
+</tr>
+<tr>
+<td>依赖的库不支持异步</td>
+<td>一个阻塞调用拖垮整个事件循环</td>
+</tr>
+<tr>
+<td>需要精细控制请求顺序</td>
+<td>调试成本会让你怀疑人生</td>
+</tr>
+</tbody>
+</table>
+<p>异步的本质是<strong>在等待 IO 的时候去干别的事</strong>。如果你的瓶颈根本不在 IO 等待上，换 async 只会让代码更难读。</p></div>
+              <div class="post-tags">
+<a href="/tags/python/" class="post-tag">#Python</a><a href="/tags/异步/" class="post-tag">#异步</a><a href="/tags/爬虫/" class="post-tag">#爬虫</a>              </div>
+            </article>
+            <div>
+              <div class="post-nav">
+<a href="/posts/python-313/" class="nav-post prev">← Python 3.13 里那些真正影响日常的小改动</a><a href="/posts/cloudflare-pages/" class="nav-post next">把动态站点搬到 Cloudflare Pages：静态导出的六个坑 →</a>              </div>
+            </div>
+            <section class="related-block">
+              <div class="section-title">相关文章</div>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-09-02</span><span class="dot">·</span><span class="card-min">2 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/fasthtml-blog/">用 FastHTML 写博客：把 HTML 重新变回 Python 函数</a>                </h2>
+                <p class="card-summary">试了一圈模板引擎之后，我发现最顺手的方案是不要模板——直接把标签写成 Python 函数，配合 Starlette 的路由，一个博客的骨架半天就能跑起来。</p>
+                <div class="card-foot">
+<a href="/tags/fasthtml/" class="card-tag">#FastHTML</a><a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/web/" class="card-tag">#Web</a><a href="/posts/fasthtml-blog/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-09-01</span><span class="dot">·</span><span class="card-min">1 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/playwright-login-scrape/">用 Playwright 抓取需要登录的页面</a>                </h2>
+                <p class="card-summary">遇到「需要登录才能看到的列表页」怎么办？用 Playwright 持久化 storage_state 后重复使用最稳。</p>
+                <div class="card-foot">
+<a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/automation/" class="card-tag">#automation</a><a href="/tags/playwright/" class="card-tag">#playwright</a><a href="/tags/scraper/" class="card-tag">#scraper</a><a href="/posts/playwright-login-scrape/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-08-22</span><span class="dot">·</span><span class="card-min">1 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/httpx-async-crawler/">用 httpx 异步重写一个网络爬虫</a>                </h2>
+                <p class="card-summary">分享把同步 requests + BeautifulSoup 爬虫改写为 httpx + asyncio 后，速度提升 8 倍的过程与坑。</p>
+                <div class="card-foot">
+<a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/asyncio/" class="card-tag">#asyncio</a><a href="/tags/crawler/" class="card-tag">#crawler</a><a href="/tags/httpx/" class="card-tag">#httpx</a><a href="/posts/httpx-async-crawler/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+            </section>
+          </div>
+        </div>
+</main>      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <section id="toc" class="card toc-card">
+            <h3 class="card-title">目录</h3>
+            <div class="toc-scroll">
+              <ul class="toc-list">
+                <li class="toc-item toc-l2">
+<a href="#细节一并发数不是越大越好">细节一：并发数不是越大越好</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#细节二超时要分层设置">细节二：超时要分层设置</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#细节三失败要退避重试但不能无脑重试">细节三：失败要退避重试，但不能无脑重试</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#完整的骨架">完整的骨架</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#什么时候别上-asyncio">什么时候别上 asyncio</a>                </li>
+              </ul>
+            </div>
+          </section>
+          <section class="card">
+            <h3 class="card-title">标签</h3>
+            <div class="tag-cloud">
+<a href="/tags/python/" class="tag-chip" title="7 篇文章">Python<span class="tag-count">7</span></a><a href="/tags/fasthtml/" class="tag-chip" title="2 篇文章">FastHTML<span class="tag-count">2</span></a><a href="/tags/web/" class="tag-chip" title="2 篇文章">Web<span class="tag-count">2</span></a><a href="/tags/ai/" class="tag-chip" title="1 篇文章">AI<span class="tag-count">1</span></a><a href="/tags/cloudflare/" class="tag-chip" title="1 篇文章">Cloudflare<span class="tag-count">1</span></a><a href="/tags/git/" class="tag-chip" title="1 篇文章">Git<span class="tag-count">1</span></a><a href="/tags/markdown/" class="tag-chip" title="1 篇文章">Markdown<span class="tag-count">1</span></a><a href="/tags/sqlite/" class="tag-chip" title="1 篇文章">SQLite<span class="tag-count">1</span></a><a href="/tags/transformer/" class="tag-chip" title="1 篇文章">Transformer<span class="tag-count">1</span></a><a href="/tags/asyncio/" class="tag-chip" title="1 篇文章">asyncio<span class="tag-count">1</span></a><a href="/tags/automation/" class="tag-chip" title="1 篇文章">automation<span class="tag-count">1</span></a><a href="/tags/crawler/" class="tag-chip" title="1 篇文章">crawler<span class="tag-count">1</span></a><a href="/tags/form/" class="tag-chip" title="1 篇文章">form<span class="tag-count">1</span></a><a href="/tags/httpx/" class="tag-chip" title="1 篇文章">httpx<span class="tag-count">1</span></a><a href="/tags/playwright/" class="tag-chip" title="1 篇文章">playwright<span class="tag-count">1</span></a><a href="/tags/scraper/" class="tag-chip" title="1 篇文章">scraper<span class="tag-count">1</span></a><a href="/tags/upload/" class="tag-chip" title="1 篇文章">upload<span class="tag-count">1</span></a><a href="/tags/%E5%89%8D%E7%AB%AF/" class="tag-chip" title="1 篇文章">前端<span class="tag-count">1</span></a><a href="/tags/%E5%B7%A5%E5%85%B7/" class="tag-chip" title="1 篇文章">工具<span class="tag-count">1</span></a><a href="/tags/%E5%BC%82%E6%AD%A5/" class="tag-chip" title="1 篇文章">异步<span class="tag-count">1</span></a><a href="/tags/%E6%80%A7%E8%83%BD/" class="tag-chip" title="1 篇文章">性能<span class="tag-count">1</span></a><a href="/tags/%E6%95%88%E7%8E%87/" class="tag-chip" title="1 篇文章">效率<span class="tag-count">1</span></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="tag-chip" title="1 篇文章">数据库<span class="tag-count">1</span></a><a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/" class="tag-chip" title="1 篇文章">新特性<span class="tag-count">1</span></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="tag-chip" title="1 篇文章">深度学习<span class="tag-count">1</span></a><a href="/tags/%E7%88%AC%E8%99%AB/" class="tag-chip" title="1 篇文章">爬虫<span class="tag-count">1</span></a><a href="/tags/%E9%83%A8%E7%BD%B2/" class="tag-chip" title="1 篇文章">部署<span class="tag-count">1</span></a><a href="/tags/%E9%9A%8F%E7%AC%94/" class="tag-chip" title="1 篇文章">随笔<span class="tag-count">1</span></a>            </div>
+          </section>
+<details open class="card collapse-card"><summary class="card-head">归档</summary>            <div class="card-body">
+              <ul class="archive-list">
+                <li>
+<a href="/archives/2026-09/" class="item-link"><span class="item-text">2026 年 9 月</span><span class="item-count">3</span></a>                </li>
+                <li>
+<a href="/archives/2026-08/" class="item-link"><span class="item-text">2026 年 8 月</span><span class="item-count">3</span></a>                </li>
+                <li>
+<a href="/archives/2026-07/" class="item-link"><span class="item-text">2026 年 7 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-06/" class="item-link"><span class="item-text">2026 年 6 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-05/" class="item-link"><span class="item-text">2026 年 5 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-03/" class="item-link"><span class="item-text">2026 年 3 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-01/" class="item-link"><span class="item-text">2026 年 1 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2025-12/" class="item-link"><span class="item-text">2025 年 12 月</span><span class="item-count">1</span></a>                </li>
+              </ul>
+              <p class="card-foot-note">共 12 篇文章</p>
+            </div>
+</details><details open class="card collapse-card"><summary class="card-head">分类</summary>            <div class="card-body">
+              <ul class="category-list">
+                <li>
+<a href="/categories/python/" class="item-link"><span class="item-text">Python</span><span class="item-count">6</span></a>                </li>
+                <li>
+<a href="/categories/web/" class="item-link"><span class="item-text">Web</span><span class="item-count">2</span></a>                </li>
+                <li>
+<a href="/categories/ai/" class="item-link"><span class="item-text">AI</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E5%B7%A5%E5%85%B7/" class="item-link"><span class="item-text">工具</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="item-link"><span class="item-text">数据库</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E9%9A%8F%E7%AC%94/" class="item-link"><span class="item-text">随笔</span><span class="item-count">1</span></a>                </li>
+              </ul>
+            </div>
+</details>        </div>
+      </aside>
+    </div>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-line">© 2026 · LUCA BLOG · Luca369</p>
+        <p class="footer-line muted">
+Powered by <a href="https://fastht.ml" rel="noopener" target="_blank">FastHTML</a> + <a href="https://github.com/AnswerDotAI/fastlite" rel="noopener" target="_blank">fastlite</a>        </p>
+      </div>
+    </footer>
+<script src="/static/js/app.js" defer></script>  </body>
+</html>

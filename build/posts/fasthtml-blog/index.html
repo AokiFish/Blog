@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <title>用 FastHTML 写博客：把 HTML 重新变回 Python 函数 · LUCA BLOG</title>
+    <meta name="description" content="试了一圈模板引擎之后，我发现最顺手的方案是不要模板——直接把标签写成 Python 函数，配合 Starlette 的路由，一个博客的骨架半天就能跑起来。">
+    <meta property="og:title" content="用 FastHTML 写博客：把 HTML 重新变回 Python 函数 · LUCA BLOG">
+    <meta property="og:description" content="试了一圈模板引擎之后，我发现最顺手的方案是不要模板——直接把标签写成 Python 函数，配合 Starlette 的路由，一个博客的骨架半天就能跑起来。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blog.272314369.xyz">
+    <link rel="canonical" href="https://localhost/posts/fasthtml-blog/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="FastHTML">
+    <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/code.css" type="text/css">
+    <link rel="alternate" type="application/rss+xml" href="/feed.xml" title="LUCA BLOG">
+<script>
+(function(){
+  try{
+    var saved=localStorage.getItem('theme');
+    var mode=saved||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-theme',mode);
+  }catch(e){document.documentElement.setAttribute('data-theme','light');}
+})();
+</script><script>
+(function(){
+  function apply(m){document.documentElement.setAttribute('data-theme',m);try{localStorage.setItem('theme',m);}catch(e){}}
+  var btn=document.getElementById('theme-toggle');
+  if(btn) btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+    apply(cur==='dark'?'light':'dark');
+  });
+})();
+</script>  </head>
+  <body>
+    <header class="site-header">
+      <div class="banner-inner">
+        <nav class="banner-side banner-left">
+<a href="/" class="banner-link">首页</a><a href="/about/" class="banner-link">关于</a>        </nav>
+        <div class="banner-center">
+<a href="/" class="banner-brand" title="返回首页">            <h1 class="banner-title">LUCA BLOG</h1>
+            <p class="banner-subtitle">记录 Python · Web · AI 的学习与实践</p>
+</a>        </div>
+        <div class="banner-side banner-right">
+<form enctype="multipart/form-data" action="/search/" method="get" role="search" class="header-search" title="站内搜索"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>            <input type="search" name="q" placeholder="搜索文章…" aria-label="搜索文章" autocomplete="off" class="header-search-input">
+</form><a href="/feed.xml" class="banner-link rss-link" title="RSS 订阅"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>RSS</a><button type="button" aria-label="切换深色或浅色主题" id="theme-toggle" class="theme-toggle" title="切换深色 / 浅色阅读" name="theme-toggle"><svg class="ico-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="ico-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>        </div>
+      </div>
+    </header>
+    <div class="layout ">
+<main class="main-content">        <div class="content">
+          <div class="post-main">
+            <article class="post-article">
+              <div class="post-head">
+                <div class="post-meta">
+<a href="/categories/python/" class="post-cat">Python</a><span class="dot">·</span><span class="post-date">2026-09-02</span><span class="dot">·</span><span class="post-min">约 2 分钟</span><span class="dot">·</span><span class="post-words">741 字</span>                </div>
+                <h1 class="post-title">用 FastHTML 写博客：把 HTML 重新变回 Python 函数</h1>
+              </div>
+              <div class="post-body markdown-body"><p>做个人博客这件事，我反复重写过四次。第一次用 Django，第二次是 Hugo，第三次 Next.js，这一次停在 FastHTML 上。不是因为它最流行，恰恰相反——它足够小，小到我能把整个框架的行为在脑子里跑一遍。</p>
+<h2 id="为什么放弃模板引擎">为什么放弃模板引擎<a class="anchor" href="#为什么放弃模板引擎" title="链接到此标题">&para;</a></h2>
+<p>模板引擎的问题不在于它慢，而在于它引入了两套语言：一套写逻辑，一套写结构。你永远要在「这个值到底在哪一层被转义了」这件事上花时间。</p>
+<p>FastHTML 的思路很直接：<strong>HTML 标签就是函数</strong>。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fasthtml.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">Div</span><span class="p">,</span> <span class="n">H1</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">P</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">card</span><span class="p">(</span><span class="n">post</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Div</span><span class="p">(</span>
+        <span class="n">H1</span><span class="p">(</span><span class="n">A</span><span class="p">(</span><span class="n">post</span><span class="p">[</span><span class="s2">"title"</span><span class="p">],</span> <span class="n">href</span><span class="o">=</span><span class="sa">f</span><span class="s2">"/posts/</span><span class="si">{</span><span class="n">post</span><span class="p">[</span><span class="s1">'slug'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)),</span>
+        <span class="n">P</span><span class="p">(</span><span class="n">post</span><span class="p">[</span><span class="s2">"summary"</span><span class="p">],</span> <span class="bp">cls</span><span class="o">=</span><span class="s2">"muted"</span><span class="p">),</span>
+        <span class="bp">cls</span><span class="o">=</span><span class="s2">"card"</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+<p>这段代码返回的就是一个可以序列化成 HTML 字符串的对象。没有模板目录，没有 <code>{% for %}</code>，循环用列表推导式解决：</p>
+<div class="highlight"><pre><span></span><code><span class="n">Div</span><span class="p">([</span><span class="n">card</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">posts</span><span class="p">],</span> <span class="bp">cls</span><span class="o">=</span><span class="s2">"post-list"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="路由apirouter-让子模块各自为政">路由：APIRouter 让子模块各自为政<a class="anchor" href="#路由apirouter-让子模块各自为政" title="链接到此标题">&para;</a></h2>
+<p>路由装饰器看上去和 FastAPI 几乎一样：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fasthtml.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">()</span>
+
+<span class="nd">@router</span><span class="p">(</span><span class="s2">"/posts/</span><span class="si">{slug}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">detail</span><span class="p">(</span><span class="n">slug</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="n">get_post</span><span class="p">(</span><span class="n">slug</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">post</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">RedirectResponse</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">post_detail</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+</code></pre></div>
+<p>关键区别在于返回值：FastAPI 返回 JSON，FastHTML 返回<strong>节点树</strong>，框架帮你渲染成完整的 HTML 文档。所以每篇博客文章、每个侧边栏组件，都可以按页面拆成一个独立的 package，<code>app.py</code> 只负责把它们挂上去。</p>
+<h2 id="一点点代价">一点点代价<a class="anchor" href="#一点点代价" title="链接到此标题">&para;</a></h2>
+<p>当然不是全无代价：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>模板引擎</th>
+<th>FastHTML</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>前端同学改样式</td>
+<td>直接改 HTML</td>
+<td>需要找对应 Python 函数</td>
+</tr>
+<tr>
+<td>复杂条件渲染</td>
+<td><code>{% if %}</code> 很直观</td>
+<td>三元表达式会变长</td>
+</tr>
+<tr>
+<td>缓存片段</td>
+<td>生态成熟</td>
+<td>得自己写</td>
+</tr>
+<tr>
+<td>类型提示</td>
+<td>基本没有</td>
+<td>编辑器补全还不错</td>
+</tr>
+</tbody>
+</table>
+<p>如果你的团队里有专职前端，模板引擎依然是更稳妥的选择。但如果是个人项目、内部工具，或者你本来就享受「用一种语言写完整个应用」的感觉，FastHTML 的体验是相当轻快的。</p>
+<div class="admonition note">
+<p class="admonition-title">关于性能</p>
+<p>每次请求都重新构建节点树听起来很浪费，但实测下来渲染一棵几百个节点的树只占零点几毫秒，真正的瓶颈永远在数据库查询上。</p>
+</div>
+<h2 id="我最后的项目结构">我最后的项目结构<a class="anchor" href="#我最后的项目结构" title="链接到此标题">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>app.py           # 只做全局设置：hdrs、静态目录、挂载子路由
+routes/          # 每个页面一个模块，各自持有 APIRouter
+ui/              # 布局与可复用组件
+repos/           # 数据访问
+core/            # Markdown 渲染、分页、文本工具
+</code></pre></div>
+<p>这个结构最大的好处是：<strong>我知道每一段 HTML 是从哪个函数里出来的</strong>。对一个要长期维护的个人项目来说，这种确定性比任何花哨的特性都值钱。</p></div>
+              <div class="post-tags">
+<a href="/tags/fasthtml/" class="post-tag">#FastHTML</a><a href="/tags/python/" class="post-tag">#Python</a><a href="/tags/web/" class="post-tag">#Web</a>              </div>
+            </article>
+            <div>
+              <div class="post-nav">
+<a href="/posts/playwright-login-scrape/" class="nav-post prev">← 用 Playwright 抓取需要登录的页面</a><a href="/posts/我的新文章/" class="nav-post next">我的新文章 →</a>              </div>
+            </div>
+            <section class="related-block">
+              <div class="section-title">相关文章</div>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-09-01</span><span class="dot">·</span><span class="card-min">1 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/playwright-login-scrape/">用 Playwright 抓取需要登录的页面</a>                </h2>
+                <p class="card-summary">遇到「需要登录才能看到的列表页」怎么办？用 Playwright 持久化 storage_state 后重复使用最稳。</p>
+                <div class="card-foot">
+<a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/automation/" class="card-tag">#automation</a><a href="/tags/playwright/" class="card-tag">#playwright</a><a href="/tags/scraper/" class="card-tag">#scraper</a><a href="/posts/playwright-login-scrape/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-08-22</span><span class="dot">·</span><span class="card-min">1 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/httpx-async-crawler/">用 httpx 异步重写一个网络爬虫</a>                </h2>
+                <p class="card-summary">分享把同步 requests + BeautifulSoup 爬虫改写为 httpx + asyncio 后，速度提升 8 倍的过程与坑。</p>
+                <div class="card-foot">
+<a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/asyncio/" class="card-tag">#asyncio</a><a href="/tags/crawler/" class="card-tag">#crawler</a><a href="/tags/httpx/" class="card-tag">#httpx</a><a href="/posts/httpx-async-crawler/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-06-11</span><span class="dot">·</span><span class="card-min">3 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/markdown-render/">给 Markdown 加上目录、代码高亮和提示块</a>                </h2>
+                <p class="card-summary">python-markdown 的默认配置在中文场景下有个隐蔽的坑——标题锚点会变成空字符串。这篇记下我最终使用的扩展组合。</p>
+                <div class="card-foot">
+<a href="/tags/markdown/" class="card-tag">#Markdown</a><a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/%E5%89%8D%E7%AB%AF/" class="card-tag">#前端</a><a href="/posts/markdown-render/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+            </section>
+          </div>
+        </div>
+</main>      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <section id="toc" class="card toc-card">
+            <h3 class="card-title">目录</h3>
+            <div class="toc-scroll">
+              <ul class="toc-list">
+                <li class="toc-item toc-l2">
+<a href="#为什么放弃模板引擎">为什么放弃模板引擎</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#路由apirouter-让子模块各自为政">路由：APIRouter 让子模块各自为政</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#一点点代价">一点点代价</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#我最后的项目结构">我最后的项目结构</a>                </li>
+              </ul>
+            </div>
+          </section>
+          <section class="card">
+            <h3 class="card-title">标签</h3>
+            <div class="tag-cloud">
+<a href="/tags/python/" class="tag-chip" title="7 篇文章">Python<span class="tag-count">7</span></a><a href="/tags/fasthtml/" class="tag-chip" title="2 篇文章">FastHTML<span class="tag-count">2</span></a><a href="/tags/web/" class="tag-chip" title="2 篇文章">Web<span class="tag-count">2</span></a><a href="/tags/ai/" class="tag-chip" title="1 篇文章">AI<span class="tag-count">1</span></a><a href="/tags/cloudflare/" class="tag-chip" title="1 篇文章">Cloudflare<span class="tag-count">1</span></a><a href="/tags/git/" class="tag-chip" title="1 篇文章">Git<span class="tag-count">1</span></a><a href="/tags/markdown/" class="tag-chip" title="1 篇文章">Markdown<span class="tag-count">1</span></a><a href="/tags/sqlite/" class="tag-chip" title="1 篇文章">SQLite<span class="tag-count">1</span></a><a href="/tags/transformer/" class="tag-chip" title="1 篇文章">Transformer<span class="tag-count">1</span></a><a href="/tags/asyncio/" class="tag-chip" title="1 篇文章">asyncio<span class="tag-count">1</span></a><a href="/tags/automation/" class="tag-chip" title="1 篇文章">automation<span class="tag-count">1</span></a><a href="/tags/crawler/" class="tag-chip" title="1 篇文章">crawler<span class="tag-count">1</span></a><a href="/tags/form/" class="tag-chip" title="1 篇文章">form<span class="tag-count">1</span></a><a href="/tags/httpx/" class="tag-chip" title="1 篇文章">httpx<span class="tag-count">1</span></a><a href="/tags/playwright/" class="tag-chip" title="1 篇文章">playwright<span class="tag-count">1</span></a><a href="/tags/scraper/" class="tag-chip" title="1 篇文章">scraper<span class="tag-count">1</span></a><a href="/tags/upload/" class="tag-chip" title="1 篇文章">upload<span class="tag-count">1</span></a><a href="/tags/%E5%89%8D%E7%AB%AF/" class="tag-chip" title="1 篇文章">前端<span class="tag-count">1</span></a><a href="/tags/%E5%B7%A5%E5%85%B7/" class="tag-chip" title="1 篇文章">工具<span class="tag-count">1</span></a><a href="/tags/%E5%BC%82%E6%AD%A5/" class="tag-chip" title="1 篇文章">异步<span class="tag-count">1</span></a><a href="/tags/%E6%80%A7%E8%83%BD/" class="tag-chip" title="1 篇文章">性能<span class="tag-count">1</span></a><a href="/tags/%E6%95%88%E7%8E%87/" class="tag-chip" title="1 篇文章">效率<span class="tag-count">1</span></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="tag-chip" title="1 篇文章">数据库<span class="tag-count">1</span></a><a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/" class="tag-chip" title="1 篇文章">新特性<span class="tag-count">1</span></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="tag-chip" title="1 篇文章">深度学习<span class="tag-count">1</span></a><a href="/tags/%E7%88%AC%E8%99%AB/" class="tag-chip" title="1 篇文章">爬虫<span class="tag-count">1</span></a><a href="/tags/%E9%83%A8%E7%BD%B2/" class="tag-chip" title="1 篇文章">部署<span class="tag-count">1</span></a><a href="/tags/%E9%9A%8F%E7%AC%94/" class="tag-chip" title="1 篇文章">随笔<span class="tag-count">1</span></a>            </div>
+          </section>
+<details open class="card collapse-card"><summary class="card-head">归档</summary>            <div class="card-body">
+              <ul class="archive-list">
+                <li>
+<a href="/archives/2026-09/" class="item-link"><span class="item-text">2026 年 9 月</span><span class="item-count">3</span></a>                </li>
+                <li>
+<a href="/archives/2026-08/" class="item-link"><span class="item-text">2026 年 8 月</span><span class="item-count">3</span></a>                </li>
+                <li>
+<a href="/archives/2026-07/" class="item-link"><span class="item-text">2026 年 7 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-06/" class="item-link"><span class="item-text">2026 年 6 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-05/" class="item-link"><span class="item-text">2026 年 5 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-03/" class="item-link"><span class="item-text">2026 年 3 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-01/" class="item-link"><span class="item-text">2026 年 1 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2025-12/" class="item-link"><span class="item-text">2025 年 12 月</span><span class="item-count">1</span></a>                </li>
+              </ul>
+              <p class="card-foot-note">共 12 篇文章</p>
+            </div>
+</details><details open class="card collapse-card"><summary class="card-head">分类</summary>            <div class="card-body">
+              <ul class="category-list">
+                <li>
+<a href="/categories/python/" class="item-link"><span class="item-text">Python</span><span class="item-count">6</span></a>                </li>
+                <li>
+<a href="/categories/web/" class="item-link"><span class="item-text">Web</span><span class="item-count">2</span></a>                </li>
+                <li>
+<a href="/categories/ai/" class="item-link"><span class="item-text">AI</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E5%B7%A5%E5%85%B7/" class="item-link"><span class="item-text">工具</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="item-link"><span class="item-text">数据库</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E9%9A%8F%E7%AC%94/" class="item-link"><span class="item-text">随笔</span><span class="item-count">1</span></a>                </li>
+              </ul>
+            </div>
+</details>        </div>
+      </aside>
+    </div>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-line">© 2026 · LUCA BLOG · Luca369</p>
+        <p class="footer-line muted">
+Powered by <a href="https://fastht.ml" rel="noopener" target="_blank">FastHTML</a> + <a href="https://github.com/AnswerDotAI/fastlite" rel="noopener" target="_blank">fastlite</a>        </p>
+      </div>
+    </footer>
+<script src="/static/js/app.js" defer></script>  </body>
+</html>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>LUCA BLOG</title>
+    <link>https://blog.272314369.xyz/</link>
+    <description>记录 Python · Web · AI 的学习与实践</description>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 07 Sep 2026 15:36:20 -0000</lastBuildDate>
+    <atom:link href="https://blog.272314369.xyz/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>我的新文章</title>
+      <link>https://blog.272314369.xyz/posts/%E6%88%91%E7%9A%84%E6%96%B0%E6%96%87%E7%AB%A0/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/%E6%88%91%E7%9A%84%E6%96%B0%E6%96%87%E7%AB%A0/</guid>
+      <pubDate>Mon, 07 Sep 2026 10:00:00 -0000</pubDate>
+      <description>一句话摘要</description>
+    </item>
+    <item>
+      <title>用 FastHTML 写博客：把 HTML 重新变回 Python 函数</title>
+      <link>https://blog.272314369.xyz/posts/fasthtml-blog/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/fasthtml-blog/</guid>
+      <pubDate>Wed, 02 Sep 2026 09:30:00 -0000</pubDate>
+      <description>试了一圈模板引擎之后，我发现最顺手的方案是不要模板——直接把标签写成 Python 函数，配合 Starlette 的路由，一个博客的骨架半天就能跑起来。</description>
+    </item>
+    <item>
+      <title>用 Playwright 抓取需要登录的页面</title>
+      <link>https://blog.272314369.xyz/posts/playwright-login-scrape/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/playwright-login-scrape/</guid>
+      <pubDate>Tue, 01 Sep 2026 09:00:00 -0000</pubDate>
+      <description>遇到「需要登录才能看到的列表页」怎么办？用 Playwright 持久化 storage_state 后重复使用最稳。</description>
+    </item>
+    <item>
+      <title>FastHTML 表单与文件上传</title>
+      <link>https://blog.272314369.xyz/posts/fasthtml-form-upload/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/fasthtml-form-upload/</guid>
+      <pubDate>Sun, 30 Aug 2026 09:00:00 -0000</pubDate>
+      <description>用 python-fasthtml 处理表单提交、文件上传与 CSRF 保护，记录常见坑。</description>
+    </item>
+    <item>
+      <title>用 httpx 异步重写一个网络爬虫</title>
+      <link>https://blog.272314369.xyz/posts/httpx-async-crawler/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/httpx-async-crawler/</guid>
+      <pubDate>Sat, 22 Aug 2026 09:00:00 -0000</pubDate>
+      <description>分享把同步 requests + BeautifulSoup 爬虫改写为 httpx + asyncio 后，速度提升 8 倍的过程与坑。</description>
+    </item>
+    <item>
+      <title>SQLite 不是玩具：单文件数据库能撑到什么规模</title>
+      <link>https://blog.272314369.xyz/posts/sqlite-scale/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/sqlite-scale/</guid>
+      <pubDate>Tue, 18 Aug 2026 20:10:00 -0000</pubDate>
+      <description>我把博客从 PostgreSQL 迁到 SQLite 之后，页面反而更快了。这篇记录几个关键配置，以及什么时候你不该这么做。</description>
+    </item>
+    <item>
+      <title>把注意力画成一张表：从零理解 Transformer</title>
+      <link>https://blog.272314369.xyz/posts/attention-from-scratch/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/attention-from-scratch/</guid>
+      <pubDate>Fri, 24 Jul 2026 15:40:00 -0000</pubDate>
+      <description>不推公式，只用一张 4×4 的表格和十几行 NumPy，把 self-attention 到底在算什么讲清楚。</description>
+    </item>
+    <item>
+      <title>给 Markdown 加上目录、代码高亮和提示块</title>
+      <link>https://blog.272314369.xyz/posts/markdown-render/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/markdown-render/</guid>
+      <pubDate>Thu, 11 Jun 2026 10:20:00 -0000</pubDate>
+      <description>python-markdown 的默认配置在中文场景下有个隐蔽的坑——标题锚点会变成空字符串。这篇记下我最终使用的扩展组合。</description>
+    </item>
+    <item>
+      <title>把动态站点搬到 Cloudflare Pages：静态导出的六个坑</title>
+      <link>https://blog.272314369.xyz/posts/cloudflare-pages/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/cloudflare-pages/</guid>
+      <pubDate>Wed, 20 May 2026 14:05:00 -0000</pubDate>
+      <description>Pages 只吃静态文件，而我的博客是 Python 渲染的。这篇记录我怎样用「本地渲染 + 全量导出」把两者接起来，以及踩过的坑。</description>
+    </item>
+    <item>
+      <title>用 asyncio 重构爬虫：6 倍提速背后的三个细节</title>
+      <link>https://blog.272314369.xyz/posts/asyncio-crawler/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/asyncio-crawler/</guid>
+      <pubDate>Sun, 08 Mar 2026 09:15:00 -0000</pubDate>
+      <description>同样的 2000 个 URL，同步版跑了 11 分钟，异步版 1 分 50 秒。但提速的关键不是换成 aiohttp，而是限流和超时策略。</description>
+    </item>
+    <item>
+      <title>Python 3.13 里那些真正影响日常的小改动</title>
+      <link>https://blog.272314369.xyz/posts/python-313/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/python-313/</guid>
+      <pubDate>Thu, 22 Jan 2026 11:00:00 -0000</pubDate>
+      <description>不去谈 JIT 和自由线程这些大新闻，只挑几个我每天写代码时确实会用到的变化。</description>
+    </item>
+    <item>
+      <title>一个人的 Git 工作流：够用就好</title>
+      <link>https://blog.272314369.xyz/posts/git-workflow/</link>
+      <guid isPermaLink="true">https://blog.272314369.xyz/posts/git-workflow/</guid>
+      <pubDate>Mon, 15 Dec 2025 08:40:00 -0000</pubDate>
+      <description>没有团队协作的约束之后，我反而更需要一套纪律。这是我用了一年多、几乎没有出过事故的流程。</description>
+    </item>
+  </channel>
+</rss>

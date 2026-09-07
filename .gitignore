@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.pyc
+
+# 环境与密钥（勿提交）
+.env
+.venv/
+
+# 本地数据与构建产物
+data/
+dist/
+
+# 运行时会话密钥（FastHTML 自动生成，勿提交）
+.sesskey
+
+# SQLite 临时文件
+*.db-wal
+*.db-shm
+
+# 编辑器
+.idea/
+.vscode/
+.DS_Store
+.hive/
+.hive2/

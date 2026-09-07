@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <title>Python 3.13 里那些真正影响日常的小改动 · LUCA BLOG</title>
+    <meta name="description" content="不去谈 JIT 和自由线程这些大新闻，只挑几个我每天写代码时确实会用到的变化。">
+    <meta property="og:title" content="Python 3.13 里那些真正影响日常的小改动 · LUCA BLOG">
+    <meta property="og:description" content="不去谈 JIT 和自由线程这些大新闻，只挑几个我每天写代码时确实会用到的变化。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://blog.272314369.xyz">
+    <link rel="canonical" href="https://localhost/posts/python-313/">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="FastHTML">
+    <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/code.css" type="text/css">
+    <link rel="alternate" type="application/rss+xml" href="/feed.xml" title="LUCA BLOG">
+<script>
+(function(){
+  try{
+    var saved=localStorage.getItem('theme');
+    var mode=saved||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-theme',mode);
+  }catch(e){document.documentElement.setAttribute('data-theme','light');}
+})();
+</script><script>
+(function(){
+  function apply(m){document.documentElement.setAttribute('data-theme',m);try{localStorage.setItem('theme',m);}catch(e){}}
+  var btn=document.getElementById('theme-toggle');
+  if(btn) btn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+    apply(cur==='dark'?'light':'dark');
+  });
+})();
+</script>  </head>
+  <body>
+    <header class="site-header">
+      <div class="banner-inner">
+        <nav class="banner-side banner-left">
+<a href="/" class="banner-link">首页</a><a href="/about/" class="banner-link">关于</a>        </nav>
+        <div class="banner-center">
+<a href="/" class="banner-brand" title="返回首页">            <h1 class="banner-title">LUCA BLOG</h1>
+            <p class="banner-subtitle">记录 Python · Web · AI 的学习与实践</p>
+</a>        </div>
+        <div class="banner-side banner-right">
+<form enctype="multipart/form-data" action="/search/" method="get" role="search" class="header-search" title="站内搜索"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>            <input type="search" name="q" placeholder="搜索文章…" aria-label="搜索文章" autocomplete="off" class="header-search-input">
+</form><a href="/feed.xml" class="banner-link rss-link" title="RSS 订阅"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>RSS</a><button type="button" aria-label="切换深色或浅色主题" id="theme-toggle" class="theme-toggle" title="切换深色 / 浅色阅读" name="theme-toggle"><svg class="ico-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="ico-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>        </div>
+      </div>
+    </header>
+    <div class="layout ">
+<main class="main-content">        <div class="content">
+          <div class="post-main">
+            <article class="post-article">
+              <div class="post-head">
+                <div class="post-meta">
+<a href="/categories/python/" class="post-cat">Python</a><span class="dot">·</span><span class="post-date">2026-01-22</span><span class="dot">·</span><span class="post-min">约 3 分钟</span><span class="dot">·</span><span class="post-words">862 字</span>                </div>
+                <h1 class="post-title">Python 3.13 里那些真正影响日常的小改动</h1>
+              </div>
+              <div class="post-body markdown-body"><p>每次 Python 发新版，公众号都在讲 JIT、讲 free-threading。这些当然重要，但对日常工作流的改变至少要等一两年。反而是一些不起眼的小改动，每天都在省我的时间。</p>
+<h2 id="错误提示会直接给你建议">错误提示会直接给你建议<a class="anchor" href="#错误提示会直接给你建议" title="链接到此标题">&para;</a></h2>
+<p>以前拼错模块里的属性，解释器只会说「没有这个属性」。现在它会猜：</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">http</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">http</span><span class="o">.</span><span class="n">client</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">"&lt;stdin&gt;"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ne">AttributeError</span><span class="p">:</span> <span class="n">module</span> <span class="s1">'http'</span> <span class="n">has</span> <span class="n">no</span> <span class="n">attribute</span> <span class="s1">'client'</span><span class="o">.</span> <span class="n">Did</span> <span class="n">you</span> <span class="n">mean</span><span class="p">:</span> <span class="s1">'from http import client'</span><span class="err">?</span>
+</code></pre></div>
+<p>对新手这是救命的，对老手则是少一次查文档。</p>
+<h2 id="typeerror-会指出具体是哪个参数"><code>TypeError</code> 会指出具体是哪个参数<a class="anchor" href="#typeerror-会指出具体是哪个参数" title="链接到此标题">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">greeting</span><span class="o">=</span><span class="s2">"你好"</span><span class="p">):</span>
+<span class="o">...</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">greeting</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">greet</span><span class="p">(</span><span class="s2">"world"</span><span class="p">,</span> <span class="n">greeting</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="n">nickname</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">greet</span><span class="p">()</span> <span class="n">got</span> <span class="n">an</span> <span class="n">unexpected</span> <span class="n">keyword</span> <span class="n">argument</span> <span class="s1">'nickname'</span><span class="o">.</span> <span class="n">Did</span> <span class="n">you</span> <span class="n">mean</span> <span class="s1">'greeting'</span><span class="err">?</span>
+</code></pre></div>
+<p>参数多的函数调用出错时，这条提示能省掉一轮阅读函数签名。</p>
+<h2 id="copyreplace改一个字段的不可变对象"><code>copy.replace()</code>：改一个字段的不可变对象<a class="anchor" href="#copyreplace改一个字段的不可变对象" title="链接到此标题">&para;</a></h2>
+<p>以前想改 <code>namedtuple</code> 的某个字段，要么转 dict 再转回来，要么手动构造。现在标准库给了统一入口：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">:</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span>
+
+<span class="n">base</span> <span class="o">=</span> <span class="n">Config</span><span class="p">(</span><span class="s2">"localhost"</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">prod</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">"0.0.0.0"</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<p>它对 <code>namedtuple</code>、<code>dataclass</code>、<code>functools.partial</code> 等一众类型都有效，不用再记每种类型各自的 <code>_replace</code> / <code>dataclasses.replace</code>。</p>
+<h2 id="交互式解释器终于能用了">交互式解释器终于能用了<a class="anchor" href="#交互式解释器终于能用了" title="链接到此标题">&para;</a></h2>
+<p>3.13 的 REPL 默认启用了新 shell，几个立竿见影的改进：</p>
+<ul>
+<li>多行编辑：写函数时可以上下移动光标修改任意一行</li>
+<li>直接按 F1 进帮助浏览器</li>
+<li>粘贴代码不会自动执行（以前粘一段带空行的代码经常出错）</li>
+<li>历史记录持久化到 <code>~/.python_history</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>快捷键</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>打开帮助</td>
+<td><code>F1</code></td>
+</tr>
+<tr>
+<td>清屏</td>
+<td><code>Ctrl+L</code></td>
+</tr>
+<tr>
+<td>粘贴模式</td>
+<td><code>F3</code></td>
+</tr>
+<tr>
+<td>退出</td>
+<td><code>Ctrl+D</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">不习惯可以退回旧版</p>
+<p>设置 <code>PYTHON_BASIC_REPL=1</code> 就能用回原来的 REPL。</p>
+</div>
+<h2 id="pathlib-也能匹配大小写了"><code>pathlib</code> 也能匹配大小写了<a class="anchor" href="#pathlib-也能匹配大小写了" title="链接到此标题">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">Path</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.py"</span><span class="p">,</span> <span class="n">case_sensitive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>   <span class="c1"># 新增参数</span>
+</code></pre></div>
+<p>在 Windows 上这个参数默认生效（因为文件系统本身不区分大小写），在 Linux/macOS 上可以显式打开。跨平台脚本少了一个坑。</p>
+<h2 id="关于-jit-和自由线程">关于 JIT 和自由线程<a class="anchor" href="#关于-jit-和自由线程" title="链接到此标题">&para;</a></h2>
+<p>这两个都还是实验特性：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-X<span class="w"> </span><span class="nv">gil</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>script.py<span class="w">          </span><span class="c1"># 自由线程构建</span>
+<span class="nv">PYTHON_JIT</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>python<span class="w"> </span>script.py<span class="w">      </span><span class="c1"># 复制-补丁 JIT</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">别急着在生产环境用</p>
+<p>实测下来，JIT 在纯计算密集的任务上有 5%~15% 的提升，但 Web 应用这类 IO 密集场景几乎没有变化，个别情况还因为编译开销略微变慢。自由线程则要求你用的所有 C 扩展都重新编译，生态还没跟上。</p>
+</div>
+<p>我的建议是：<strong>日常开发照常用稳定特性，把实验特性当成一个可以随手开关的开关</strong>，等生态准备好再切。Python 的版本升级从来不是用新语法，而是这些让你每天少敲几十次键的细节。</p></div>
+              <div class="post-tags">
+<a href="/tags/python/" class="post-tag">#Python</a><a href="/tags/新特性/" class="post-tag">#新特性</a>              </div>
+            </article>
+            <div>
+              <div class="post-nav">
+<a href="/posts/git-workflow/" class="nav-post prev">← 一个人的 Git 工作流：够用就好</a><a href="/posts/asyncio-crawler/" class="nav-post next">用 asyncio 重构爬虫：6 倍提速背后的三个细节 →</a>              </div>
+            </div>
+            <section class="related-block">
+              <div class="section-title">相关文章</div>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-09-02</span><span class="dot">·</span><span class="card-min">2 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/fasthtml-blog/">用 FastHTML 写博客：把 HTML 重新变回 Python 函数</a>                </h2>
+                <p class="card-summary">试了一圈模板引擎之后，我发现最顺手的方案是不要模板——直接把标签写成 Python 函数，配合 Starlette 的路由，一个博客的骨架半天就能跑起来。</p>
+                <div class="card-foot">
+<a href="/tags/fasthtml/" class="card-tag">#FastHTML</a><a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/web/" class="card-tag">#Web</a><a href="/posts/fasthtml-blog/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-09-01</span><span class="dot">·</span><span class="card-min">1 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/playwright-login-scrape/">用 Playwright 抓取需要登录的页面</a>                </h2>
+                <p class="card-summary">遇到「需要登录才能看到的列表页」怎么办？用 Playwright 持久化 storage_state 后重复使用最稳。</p>
+                <div class="card-foot">
+<a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/automation/" class="card-tag">#automation</a><a href="/tags/playwright/" class="card-tag">#playwright</a><a href="/tags/scraper/" class="card-tag">#scraper</a><a href="/posts/playwright-login-scrape/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+              <article class="post-card">
+                <div class="card-meta">
+<a href="/categories/python/" class="card-cat">Python</a><span class="dot">·</span><span class="card-date">2026-08-22</span><span class="dot">·</span><span class="card-min">1 分钟</span>                </div>
+                <h2 class="card-title">
+<a href="/posts/httpx-async-crawler/">用 httpx 异步重写一个网络爬虫</a>                </h2>
+                <p class="card-summary">分享把同步 requests + BeautifulSoup 爬虫改写为 httpx + asyncio 后，速度提升 8 倍的过程与坑。</p>
+                <div class="card-foot">
+<a href="/tags/python/" class="card-tag">#Python</a><a href="/tags/asyncio/" class="card-tag">#asyncio</a><a href="/tags/crawler/" class="card-tag">#crawler</a><a href="/tags/httpx/" class="card-tag">#httpx</a><a href="/posts/httpx-async-crawler/" class="card-more">阅读全文 →</a>                </div>
+              </article>
+            </section>
+          </div>
+        </div>
+</main>      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <section id="toc" class="card toc-card">
+            <h3 class="card-title">目录</h3>
+            <div class="toc-scroll">
+              <ul class="toc-list">
+                <li class="toc-item toc-l2">
+<a href="#错误提示会直接给你建议">错误提示会直接给你建议</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#typeerror-会指出具体是哪个参数">TypeError 会指出具体是哪个参数</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#copyreplace改一个字段的不可变对象">copy.replace()：改一个字段的不可变对象</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#交互式解释器终于能用了">交互式解释器终于能用了</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#pathlib-也能匹配大小写了">pathlib 也能匹配大小写了</a>                </li>
+                <li class="toc-item toc-l2">
+<a href="#关于-jit-和自由线程">关于 JIT 和自由线程</a>                </li>
+              </ul>
+            </div>
+          </section>
+          <section class="card">
+            <h3 class="card-title">标签</h3>
+            <div class="tag-cloud">
+<a href="/tags/python/" class="tag-chip" title="7 篇文章">Python<span class="tag-count">7</span></a><a href="/tags/fasthtml/" class="tag-chip" title="2 篇文章">FastHTML<span class="tag-count">2</span></a><a href="/tags/web/" class="tag-chip" title="2 篇文章">Web<span class="tag-count">2</span></a><a href="/tags/ai/" class="tag-chip" title="1 篇文章">AI<span class="tag-count">1</span></a><a href="/tags/cloudflare/" class="tag-chip" title="1 篇文章">Cloudflare<span class="tag-count">1</span></a><a href="/tags/git/" class="tag-chip" title="1 篇文章">Git<span class="tag-count">1</span></a><a href="/tags/markdown/" class="tag-chip" title="1 篇文章">Markdown<span class="tag-count">1</span></a><a href="/tags/sqlite/" class="tag-chip" title="1 篇文章">SQLite<span class="tag-count">1</span></a><a href="/tags/transformer/" class="tag-chip" title="1 篇文章">Transformer<span class="tag-count">1</span></a><a href="/tags/asyncio/" class="tag-chip" title="1 篇文章">asyncio<span class="tag-count">1</span></a><a href="/tags/automation/" class="tag-chip" title="1 篇文章">automation<span class="tag-count">1</span></a><a href="/tags/crawler/" class="tag-chip" title="1 篇文章">crawler<span class="tag-count">1</span></a><a href="/tags/form/" class="tag-chip" title="1 篇文章">form<span class="tag-count">1</span></a><a href="/tags/httpx/" class="tag-chip" title="1 篇文章">httpx<span class="tag-count">1</span></a><a href="/tags/playwright/" class="tag-chip" title="1 篇文章">playwright<span class="tag-count">1</span></a><a href="/tags/scraper/" class="tag-chip" title="1 篇文章">scraper<span class="tag-count">1</span></a><a href="/tags/upload/" class="tag-chip" title="1 篇文章">upload<span class="tag-count">1</span></a><a href="/tags/%E5%89%8D%E7%AB%AF/" class="tag-chip" title="1 篇文章">前端<span class="tag-count">1</span></a><a href="/tags/%E5%B7%A5%E5%85%B7/" class="tag-chip" title="1 篇文章">工具<span class="tag-count">1</span></a><a href="/tags/%E5%BC%82%E6%AD%A5/" class="tag-chip" title="1 篇文章">异步<span class="tag-count">1</span></a><a href="/tags/%E6%80%A7%E8%83%BD/" class="tag-chip" title="1 篇文章">性能<span class="tag-count">1</span></a><a href="/tags/%E6%95%88%E7%8E%87/" class="tag-chip" title="1 篇文章">效率<span class="tag-count">1</span></a><a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="tag-chip" title="1 篇文章">数据库<span class="tag-count">1</span></a><a href="/tags/%E6%96%B0%E7%89%B9%E6%80%A7/" class="tag-chip" title="1 篇文章">新特性<span class="tag-count">1</span></a><a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="tag-chip" title="1 篇文章">深度学习<span class="tag-count">1</span></a><a href="/tags/%E7%88%AC%E8%99%AB/" class="tag-chip" title="1 篇文章">爬虫<span class="tag-count">1</span></a><a href="/tags/%E9%83%A8%E7%BD%B2/" class="tag-chip" title="1 篇文章">部署<span class="tag-count">1</span></a><a href="/tags/%E9%9A%8F%E7%AC%94/" class="tag-chip" title="1 篇文章">随笔<span class="tag-count">1</span></a>            </div>
+          </section>
+<details open class="card collapse-card"><summary class="card-head">归档</summary>            <div class="card-body">
+              <ul class="archive-list">
+                <li>
+<a href="/archives/2026-09/" class="item-link"><span class="item-text">2026 年 9 月</span><span class="item-count">3</span></a>                </li>
+                <li>
+<a href="/archives/2026-08/" class="item-link"><span class="item-text">2026 年 8 月</span><span class="item-count">3</span></a>                </li>
+                <li>
+<a href="/archives/2026-07/" class="item-link"><span class="item-text">2026 年 7 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-06/" class="item-link"><span class="item-text">2026 年 6 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-05/" class="item-link"><span class="item-text">2026 年 5 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-03/" class="item-link"><span class="item-text">2026 年 3 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2026-01/" class="item-link"><span class="item-text">2026 年 1 月</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/archives/2025-12/" class="item-link"><span class="item-text">2025 年 12 月</span><span class="item-count">1</span></a>                </li>
+              </ul>
+              <p class="card-foot-note">共 12 篇文章</p>
+            </div>
+</details><details open class="card collapse-card"><summary class="card-head">分类</summary>            <div class="card-body">
+              <ul class="category-list">
+                <li>
+<a href="/categories/python/" class="item-link"><span class="item-text">Python</span><span class="item-count">6</span></a>                </li>
+                <li>
+<a href="/categories/web/" class="item-link"><span class="item-text">Web</span><span class="item-count">2</span></a>                </li>
+                <li>
+<a href="/categories/ai/" class="item-link"><span class="item-text">AI</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E5%B7%A5%E5%85%B7/" class="item-link"><span class="item-text">工具</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="item-link"><span class="item-text">数据库</span><span class="item-count">1</span></a>                </li>
+                <li>
+<a href="/categories/%E9%9A%8F%E7%AC%94/" class="item-link"><span class="item-text">随笔</span><span class="item-count">1</span></a>                </li>
+              </ul>
+            </div>
+</details>        </div>
+      </aside>
+    </div>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-line">© 2026 · LUCA BLOG · Luca369</p>
+        <p class="footer-line muted">
+Powered by <a href="https://fastht.ml" rel="noopener" target="_blank">FastHTML</a> + <a href="https://github.com/AnswerDotAI/fastlite" rel="noopener" target="_blank">fastlite</a>        </p>
+      </div>
+    </footer>
+<script src="/static/js/app.js" defer></script>  </body>
+</html>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14121f"/>
+      <stop offset="100%" stop-color="#2a1b3d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g transform="translate(760 120)" opacity=".9">
+    <rect x="0" y="0" width="70" height="70" fill="#8b7bff" opacity=".35"/>
+    <rect x="90" y="0" width="70" height="70" fill="#8b7bff" opacity=".9"/>
+    <rect x="180" y="0" width="70" height="70" fill="#8b7bff" opacity=".5"/>
+    <rect x="270" y="0" width="70" height="70" fill="#8b7bff" opacity=".2"/>
+    <rect x="0" y="90" width="70" height="70" fill="#58a6ff" opacity=".5"/>
+    <rect x="90" y="90" width="70" height="70" fill="#58a6ff" opacity=".25"/>
+    <rect x="180" y="90" width="70" height="70" fill="#58a6ff" opacity=".95"/>
+    <rect x="270" y="90" width="70" height="70" fill="#58a6ff" opacity=".4"/>
+    <rect x="0" y="180" width="70" height="70" fill="#f0883e" opacity=".3"/>
+    <rect x="90" y="180" width="70" height="70" fill="#f0883e" opacity=".6"/>
+    <rect x="180" y="180" width="70" height="70" fill="#f0883e" opacity=".25"/>
+    <rect x="270" y="180" width="70" height="70" fill="#f0883e" opacity=".85"/>
+  </g>
+  <text x="80" y="330" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="58" font-weight="700" fill="#e6edf3">把注意力画成一张表</text>
+  <text x="80" y="392" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="28" fill="#8b949e">从零理解 Transformer</text>
+</svg>

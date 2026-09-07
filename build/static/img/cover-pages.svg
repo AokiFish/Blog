@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1b2d"/>
+      <stop offset="100%" stop-color="#123047"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1000" cy="160" r="150" fill="#f6821f" opacity=".16"/>
+  <g stroke="#58a6ff" stroke-width="5" fill="none" opacity=".9">
+    <path d="M120 240 h260 l60 60 h240"/>
+    <path d="M120 300 h200 l50 50 h300"/>
+    <path d="M120 360 h300 l55 55 h200"/>
+  </g>
+  <g fill="#58a6ff">
+    <circle cx="120" cy="240" r="10"/><circle cx="120" cy="300" r="10"/><circle cx="120" cy="360" r="10"/>
+    <circle cx="680" cy="300" r="10"/><circle cx="670" cy="350" r="10"/><circle cx="675" cy="415" r="10"/>
+  </g>
+  <text x="80" y="500" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="52" font-weight="700" fill="#e6edf3">搬到 Cloudflare Pages</text>
+  <text x="80" y="552" font-family="PingFang SC,Microsoft YaHei,sans-serif" font-size="26" fill="#8b949e">静态导出的六个坑</text>
+</svg>
