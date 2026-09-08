@@ -24,8 +24,6 @@ def _render(page_no: int, base: str = "/page"):
     items = list_posts(page=pager.page, size=PAGE_SIZE)
     body = [
         Div(
-            H1("最新文章", cls="page-title"),
-            P(SITE_TAGLINE, cls="page-subtitle"),
             cls="page-head",
         )
     ]
