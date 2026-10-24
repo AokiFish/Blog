@@ -7,6 +7,10 @@ import os
 
 from fasthtml.common import Link, Meta, Script, fast_app
 
+import re
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+
 from blog.config import AUTO_SEED, DEBUG, HOST, PORT, SITE_NAME
 from web import feed, router
 from web.layout import theme_script
@@ -24,6 +28,33 @@ def _asset_ver(rel: str) -> str:
         return str(int(os.path.getmtime(p)))
     except OSError:
         return "1"
+
+
+class _AssetVersionMiddleware(BaseHTTPMiddleware):
+    """请求时按磁盘 mtime 给静态资源加版本号：文件一改 URL 即变，缓存必破。
+    解决 dev 下 uvicorn --reload 不接管 __init__ 顶层、写死版本号不刷新的问题。"""
+
+    _rx = re.compile(rb"(/static/(?:css|js)/[^\"'>\s]+)")
+
+    async def dispatch(self, request, call_next):
+        resp = await call_next(request)
+        if "text/html" not in resp.headers.get("content-type", ""):
+            return resp
+        chunks = []
+        async for chunk in resp.body_iterator:
+            chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode())
+        body = b"".join(chunks)
+
+        def repl(m):
+            full = m.group(1).decode()
+            path = full.split("?", 1)[0]
+            return (path + "?v=" + _asset_ver(path.lstrip("/"))).encode()
+
+        new_body = self._rx.sub(repl, body)
+        headers = dict(resp.headers)
+        headers.pop("content-length", None)
+        return Response(content=new_body, status_code=resp.status_code, headers=headers)
+
 
 app, rt = fast_app(
     default_hdrs=False,
@@ -48,6 +79,10 @@ app, rt = fast_app(
     # /static/* -> 项目根/static/*
     static_path=BASE_DIR,
 )
+
+# 开发服务器动态注入静态资源版本号（请求时按文件 mtime），确保改 CSS/JS 后
+# 浏览器/CDN 必然重新拉取，不再因缓存看到旧样式。
+app.add_middleware(_AssetVersionMiddleware)
 
 # 挂载所有子路由（web/__init__.py 里已聚合各页面模块的 APIRouter）
 router.to_app(app)
