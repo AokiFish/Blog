@@ -22,11 +22,11 @@
   --line: #e6dfd2;
   --line-soft: #efe9dd;
 
-  /* 品牌强调色（天青） */
-  --accent: #1597c4;
-  --accent-ink: #0b7aa1;        /* 浅色底上的链接/文字用，保证对比度 */
-  --accent-soft: rgba(21, 151, 196, 0.12);
-  --accent-line: rgba(21, 151, 196, 0.35);
+  /* 品牌强调色（淡汝窑天青，青绿调） */
+  --accent: #3f9688;
+  --accent-ink: #267a6c;        /* 浅色底上的链接/文字用，保证对比度 */
+  --accent-soft: rgba(63, 150, 136, 0.13);
+  --accent-line: rgba(63, 150, 136, 0.38);
 
   /* 代码块底色 */
   --code-bg: #f3eee4;
@@ -77,10 +77,10 @@
   --line: #2a251e;
   --line-soft: #211d17;
 
-  --accent: #46b4dd;
-  --accent-ink: #7ccdee;
-  --accent-soft: rgba(70, 180, 221, 0.14);
-  --accent-line: rgba(70, 180, 221, 0.42);
+  --accent: #7cc4b6;
+  --accent-ink: #a6e0d4;
+  --accent-soft: rgba(124, 196, 182, 0.16);
+  --accent-line: rgba(124, 196, 182, 0.42);
 
   --code-bg: #13110d;
 
@@ -339,7 +339,7 @@ html:not([data-theme="dark"]) .ico-moon { transform: translateY(0); opacity: 1; 
 }
 .hero::after {
   bottom: -22%; right: -8%;
-  background: radial-gradient(circle at 70% 70%, #79c4e0, transparent 60%);
+  background: radial-gradient(circle at 70% 70%, #9ad4c8, transparent 60%);
   opacity: 0.32;
   animation: heroFloat 20s ease-in-out infinite reverse;
 }
