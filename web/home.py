@@ -37,7 +37,6 @@ def hero():
             P(SITE_TAGLINE, cls="hero-sub"),
             Div(
                 A("开始阅读", href="#posts", cls="hero-cta"),
-                A("关于本站", href="/about/", cls="hero-cta ghost"),
                 cls="hero-actions",
             ),
             Div(
