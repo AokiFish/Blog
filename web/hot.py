@@ -20,7 +20,13 @@ def hot_card(post: dict):
     tags = post.get("tags") or []
     return Div(
         Div(
-            Span(f"👁 {post.get('views', 0)}", cls="hot-views"),
+            NotStr(
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"'
+                ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+                '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>'
+                '<circle cx="12" cy="12" r="3"/></svg>'
+            ),
+            Span(str(post.get("views", 0)), cls="hot-views"),
             cls="hot-badge",
         ),
         Div(

@@ -22,6 +22,12 @@ app, rt = fast_app(
         Meta(charset="utf-8"),
         Meta(name="viewport", content="width=device-width, initial-scale=1"),
         Meta(name="generator", content="FastHTML"),
+        Link(rel="preconnect", href="https://fonts.googleapis.com"),
+        Link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin=True),
+        Link(
+            rel="stylesheet",
+            href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
+        ),
         Link(rel="icon", type="image/svg+xml", href="/static/img/favicon.svg"),
         Link(rel="stylesheet", href="/static/css/style.css", type="text/css"),
         Link(rel="stylesheet", href="/static/css/code.css", type="text/css"),

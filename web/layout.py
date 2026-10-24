@@ -6,7 +6,9 @@ from fasthtml.common import (
 
 from blog.config import AUTHOR, NAV_ITEMS, SITE_NAME, SITE_TAGLINE, SINCE_YEAR, SITE_URL
 
-# 主题初始化脚本：放到 <head> 里，避免白天刷新时闪白
+# 主题初始化脚本：放到 <head> 里，避免刷新时闪白。
+# 主题「切换」逻辑已统一移到 static/js/app.js（含 View Transitions 圆形转场），
+# 此处不再内联，避免重复绑定导致点两次才生效。
 THEME_BOOT_JS = """
 (function(){
   try{
@@ -18,21 +20,10 @@ THEME_BOOT_JS = """
 """
 
 
-# 主题切换脚本：点击右上角按钮，在深色 / 浅色之间切换并持久化
-THEME_TOGGLE_JS = """
-(function(){
-  function apply(m){document.documentElement.setAttribute('data-theme',m);try{localStorage.setItem('theme',m);}catch(e){}}
-  var btn=document.getElementById('theme-toggle');
-  if(btn) btn.addEventListener('click',function(){
-    var cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
-    apply(cur==='dark'?'light':'dark');
-  });
-})();
-"""
-
-
 def theme_script():
-    return Script(NotStr(THEME_BOOT_JS)), Script(NotStr(THEME_TOGGLE_JS))
+    # 仅保留「无闪烁初始化」脚本；主题切换（含 View Transitions 圆形转场）
+    # 统一由 static/js/app.js 接管，避免与内联脚本重复绑定导致点两次才生效。
+    return Script(NotStr(THEME_BOOT_JS))
 
 
 def meta_tags(title: str, description: str = "", url: str = ""):
@@ -165,7 +156,11 @@ def footer():
 
 def page_shell(*body, aside=None, cls: str = ""):
     """内容区：左侧正文 + 右侧边栏（aside 为空时单栏）。"""
-    main = Main(Div(*body, cls="content"), cls="main-content")
+    main = Main(Div(*body, cls="content"), cls="main-content", id="posts")
+    grain = Div(cls="grain", aria_hidden="true")
     if aside is None:
-        return Div(main, cls="layout layout-single " + cls)
-    return Div(main, Aside(aside, cls="sidebar"), cls="layout " + cls)
+        layout = Div(main, cls="layout layout-single " + cls)
+    else:
+        layout = Div(main, Aside(aside, cls="sidebar"), cls="layout " + cls)
+    # 单元素返回，避免路由层对嵌套元组的展平歧义
+    return Div(grain, layout)
