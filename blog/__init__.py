@@ -16,6 +16,15 @@ import blog.database  # noqa: F401
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
+def _asset_ver(rel: str) -> str:
+    """按静态文件修改时间生成版本号,文件一改 URL 即变,强制浏览器/CDN 破缓存。"""
+    p = os.path.join(BASE_DIR, rel.lstrip("/"))
+    try:
+        return str(int(os.path.getmtime(p)))
+    except OSError:
+        return "1"
+
 app, rt = fast_app(
     default_hdrs=False,
     hdrs=(
@@ -29,12 +38,12 @@ app, rt = fast_app(
             href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
         ),
         Link(rel="icon", type="image/svg+xml", href="/static/img/favicon.svg"),
-        Link(rel="stylesheet", href="/static/css/style.css?v=2", type="text/css"),
-        Link(rel="stylesheet", href="/static/css/code.css?v=2", type="text/css"),
+        Link(rel="stylesheet", href=f"/static/css/style.css?v={_asset_ver('static/css/style.css')}", type="text/css"),
+        Link(rel="stylesheet", href=f"/static/css/code.css?v={_asset_ver('static/css/code.css')}", type="text/css"),
         Link(rel="alternate", type="application/rss+xml", title=SITE_NAME, href="/feed.xml"),
         theme_script(),
     ),
-    ftrs=(Script(src="/static/js/app.js?v=2", defer=True),),
+    ftrs=(Script(src=f"/static/js/app.js?v={_asset_ver('static/js/app.js')}", defer=True),),
     htmlkw={"lang": "zh-CN"},
     # /static/* -> 项目根/static/*
     static_path=BASE_DIR,
