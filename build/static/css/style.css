@@ -22,11 +22,11 @@
   --line: #e6dfd2;
   --line-soft: #efe9dd;
 
-  /* 品牌强调色（暖珊瑚） */
-  --accent: #ff5436;
-  --accent-ink: #d8391c;        /* 浅色底上的链接/文字用，保证对比度 */
-  --accent-soft: rgba(255, 84, 54, 0.12);
-  --accent-line: rgba(255, 84, 54, 0.35);
+  /* 品牌强调色（天青） */
+  --accent: #1597c4;
+  --accent-ink: #0b7aa1;        /* 浅色底上的链接/文字用，保证对比度 */
+  --accent-soft: rgba(21, 151, 196, 0.12);
+  --accent-line: rgba(21, 151, 196, 0.35);
 
   /* 代码块底色 */
   --code-bg: #f3eee4;
@@ -77,10 +77,10 @@
   --line: #2a251e;
   --line-soft: #211d17;
 
-  --accent: #ff6a45;
-  --accent-ink: #ff8a6a;
-  --accent-soft: rgba(255, 106, 69, 0.14);
-  --accent-line: rgba(255, 106, 69, 0.42);
+  --accent: #46b4dd;
+  --accent-ink: #7ccdee;
+  --accent-soft: rgba(70, 180, 221, 0.14);
+  --accent-line: rgba(70, 180, 221, 0.42);
 
   --code-bg: #13110d;
 
@@ -339,7 +339,7 @@ html:not([data-theme="dark"]) .ico-moon { transform: translateY(0); opacity: 1; 
 }
 .hero::after {
   bottom: -22%; right: -8%;
-  background: radial-gradient(circle at 70% 70%, #ffd166, transparent 60%);
+  background: radial-gradient(circle at 70% 70%, #79c4e0, transparent 60%);
   opacity: 0.32;
   animation: heroFloat 20s ease-in-out infinite reverse;
 }
@@ -372,10 +372,7 @@ html:not([data-theme="dark"]) .ico-moon { transform: translateY(0); opacity: 1; 
   line-height: 0.92;
   letter-spacing: -0.04em;
   margin: 0;
-  background: linear-gradient(180deg, var(--ink), var(--accent));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--ink);
 }
 .hero-sub {
   font-size: var(--fs-lead);
@@ -1015,8 +1012,7 @@ a.page-btn:hover { border-color: var(--accent-line); color: var(--accent-ink); t
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.04em;
-  background: linear-gradient(180deg, var(--accent), var(--ink));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  color: var(--accent);
 }
 .notfound p { color: var(--ink-soft); margin: 20px 0 26px; }
 .btn {
@@ -1072,7 +1068,7 @@ a.page-btn:hover { border-color: var(--accent-line); color: var(--accent-ink); t
   top: 0; left: 0;
   height: 3px;
   width: 0%;
-  background: linear-gradient(90deg, var(--accent), #ffd166);
+  background: var(--accent);
   z-index: 70;
   transition: width 0.1s linear;
 }
