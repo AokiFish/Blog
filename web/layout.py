@@ -127,9 +127,7 @@ def navbar(active: str = ""):
 
     return Header(
         Div(
-            # 左：导航链接（首页 / 关于）
-            Nav(*nav_links, cls="banner-side banner-left"),
-            # 中：站点 logo（点击返回首页）
+            # 左：站点 logo（点击返回首页） + 导航链接（首页 / 关于）
             Div(
                 A(
                     NotStr(LOGO_SVG),
@@ -138,7 +136,8 @@ def navbar(active: str = ""):
                     title=SITE_NAME + " · 首页",
                     aria_label=SITE_NAME,
                 ),
-                cls="banner-center",
+                Nav(*nav_links, cls="banner-side"),
+                cls="banner-side banner-left",
             ),
             # 右：操作区
             Div(*right, cls="banner-side banner-right"),
