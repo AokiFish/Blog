@@ -1,7 +1,7 @@
 """首页与分页：/ 与 /page/{n}/"""
-from fasthtml.common import APIRouter, A, B, Div, H1, P, Section, Span
+from fasthtml.common import APIRouter, B, Div, H1, P, Section, Span
 
-from blog.config import PAGE_SIZE, SITE_NAME, SITE_TAGLINE, SINCE_YEAR
+from blog.config import PAGE_SIZE, SITE_NAME, SINCE_YEAR
 from blog.core import Pager
 from categories.repos import categories_with_count
 from posts.repos import count_posts, list_posts
@@ -21,7 +21,7 @@ router = APIRouter()
 
 
 def hero():
-    """首页全幅主视觉：大字标题 + 标语 + 话题跑马灯 + 数据。"""
+    """首页全幅主视觉：大字站名 + 一行主题词 + 话题跑马灯 + 数据。"""
     cats = categories_with_count()
     tags = tags_with_count()
     topics = [c["name"] for c in cats] + [t["name"] for t in tags]
@@ -32,13 +32,8 @@ def hero():
     total = count_posts()
     return Section(
         Div(
-            P("PYTHON · WEB · AI — 学习与实践", cls="hero-eyebrow"),
             H1(SITE_NAME, cls="hero-title"),
-            P(SITE_TAGLINE, cls="hero-sub"),
-            Div(
-                A("开始阅读", href="#posts", cls="hero-cta"),
-                cls="hero-actions",
-            ),
+            P("PYTHON · WEB · AI — 学习与实践", cls="hero-sub"),
             Div(
                 Div(
                     Div(*track, cls="marquee-track"),

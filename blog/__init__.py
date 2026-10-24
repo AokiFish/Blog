@@ -34,7 +34,7 @@ class _AssetVersionMiddleware(BaseHTTPMiddleware):
     """请求时按磁盘 mtime 给静态资源加版本号：文件一改 URL 即变，缓存必破。
     解决 dev 下 uvicorn --reload 不接管 __init__ 顶层、写死版本号不刷新的问题。"""
 
-    _rx = re.compile(rb"(/static/(?:css|js)/[^\"'>\s]+)")
+    _rx = re.compile(rb"(/static/(?:css|js|img)/[^\"'>\s]+)")
 
     async def dispatch(self, request, call_next):
         resp = await call_next(request)

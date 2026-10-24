@@ -1,10 +1,22 @@
 """页面骨架：导航栏 / 页脚 / 三栏布局 / 主题脚本。"""
 from fasthtml.common import (
-    A, Aside, Button, Div, Footer, Form, H1, Header, Input, Main, Meta, Nav, NotStr,
+    A, Aside, Button, Div, Footer, Form, Header, Input, Main, Meta, Nav, NotStr,
     P, Script, Span, Title,
 )
 
-from blog.config import AUTHOR, NAV_ITEMS, SITE_NAME, SITE_TAGLINE, SINCE_YEAR, SITE_URL
+from blog.config import AUTHOR, NAV_ITEMS, SITE_NAME, SINCE_YEAR, SITE_TAGLINE, SITE_URL
+
+# 站点 logo：天青色扁平笔记图标（与 favicon.svg 同源），内联到导航栏，避免外部图标缓存。
+LOGO_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">'
+    '<rect width="64" height="64" rx="16" fill="#3f9688"/>'
+    '<rect x="19" y="15" width="26" height="34" rx="4" fill="#ffffff"/>'
+    '<path d="M37 15 h8 v8 z" fill="#bfe0d8"/>'
+    '<rect x="24" y="28" width="16" height="2.8" rx="1.4" fill="#3f9688"/>'
+    '<rect x="24" y="35" width="16" height="2.8" rx="1.4" fill="#3f9688"/>'
+    '<rect x="24" y="42" width="10" height="2.8" rx="1.4" fill="#3f9688"/>'
+    '</svg>'
+)
 
 # 主题初始化脚本：放到 <head> 里，避免刷新时闪白。
 # 主题「切换」逻辑已统一移到 static/js/app.js（含 View Transitions 圆形转场），
@@ -117,14 +129,14 @@ def navbar(active: str = ""):
         Div(
             # 左：导航链接（首页 / 关于）
             Nav(*nav_links, cls="banner-side banner-left"),
-            # 中：站名 + 副标题（点击返回首页）
+            # 中：站点 logo（点击返回首页）
             Div(
                 A(
-                    H1(SITE_NAME, cls="banner-title"),
-                    P(SITE_TAGLINE, cls="banner-subtitle"),
+                    NotStr(LOGO_SVG),
                     href="/",
                     cls="banner-brand",
-                    title="返回首页",
+                    title=SITE_NAME + " · 首页",
+                    aria_label=SITE_NAME,
                 ),
                 cls="banner-center",
             ),

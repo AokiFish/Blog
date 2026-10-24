@@ -1,42 +1,9 @@
-/* 博客前端交互：自定义光标 / 滚动揭示 / 磁性按钮 / 阅读进度 /
+/* 博客前端交互：滚动揭示 / 阅读进度 /
    主题切换(View Transitions) / 目录高亮 / 代码复制 / 返回顶部 / 导航滚动态 */
 (function () {
   'use strict';
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  /* -------------------------------------------------- 自定义光标 --- */
-  if (isFinePointer) {
-    document.documentElement.classList.add('cursor-on');
-    var dot = document.createElement('div');
-    dot.className = 'cursor-dot';
-    var ring = document.createElement('div');
-    ring.className = 'cursor-ring';
-    document.body.appendChild(dot);
-    document.body.appendChild(ring);
-
-    var mx = 0, my = 0, rx = 0, ry = 0;
-    window.addEventListener('mousemove', function (e) {
-      mx = e.clientX; my = e.clientY;
-      dot.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
-    });
-    (function loop() {
-      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
-      ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px) translate(-50%,-50%)';
-      requestAnimationFrame(loop);
-    })();
-
-    var hoverSel = 'a,button,.post-card,.cat-card,summary,input,.hero-cta,.btn';
-    document.addEventListener('mouseover', function (e) {
-      if (e.target.closest && e.target.closest(hoverSel)) ring.classList.add('is-hover');
-    });
-    document.addEventListener('mouseout', function (e) {
-      if (e.target.closest && e.target.closest(hoverSel)) ring.classList.remove('is-hover');
-    });
-    window.addEventListener('mousedown', function () { ring.classList.add('is-down'); });
-    window.addEventListener('mouseup', function () { ring.classList.remove('is-down'); });
-  }
 
   /* -------------------------------------------------- 滚动揭示 --- */
   var revealTargets = document.querySelectorAll(
@@ -60,20 +27,6 @@
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.04 });
     revealTargets.forEach(function (el) { io.observe(el); });
-  }
-
-  /* -------------------------------------------------- 磁性按钮 --- */
-  if (isFinePointer && !reduceMotion) {
-    var magnets = document.querySelectorAll('.hero-cta, .btn');
-    Array.prototype.forEach.call(magnets, function (el) {
-      el.addEventListener('mousemove', function (e) {
-        var r = el.getBoundingClientRect();
-        var x = (e.clientX - r.left - r.width / 2) * 0.3;
-        var y = (e.clientY - r.top - r.height / 2) * 0.3;
-        el.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-      });
-      el.addEventListener('mouseleave', function () { el.style.transform = ''; });
-    });
   }
 
   /* -------------------------------------------------- 阅读进度条 --- */
