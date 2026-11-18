@@ -5,15 +5,8 @@
     <link>https://blog.272314369.xyz/</link>
     <description>记录 Python · Web · AI 的学习与实践</description>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 18 Nov 2026 18:36:21 -0000</lastBuildDate>
+    <lastBuildDate>Wed, 18 Nov 2026 18:47:24 -0000</lastBuildDate>
     <atom:link href="https://blog.272314369.xyz/feed.xml" rel="self" type="application/rss+xml"/>
-    <item>
-      <title>我的新文章</title>
-      <link>https://blog.272314369.xyz/posts/%E6%88%91%E7%9A%84%E6%96%B0%E6%96%87%E7%AB%A0/</link>
-      <guid isPermaLink="true">https://blog.272314369.xyz/posts/%E6%88%91%E7%9A%84%E6%96%B0%E6%96%87%E7%AB%A0/</guid>
-      <pubDate>Mon, 07 Sep 2026 10:00:00 -0000</pubDate>
-      <description>一句话摘要</description>
-    </item>
     <item>
       <title>用 FastHTML 写博客：把 HTML 重新变回 Python 函数</title>
       <link>https://blog.272314369.xyz/posts/fasthtml-blog/</link>
