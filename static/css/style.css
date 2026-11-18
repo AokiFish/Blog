@@ -6,35 +6,38 @@
 
 /* ----------------------------------------------------------- 设计令牌 --- */
 :root {
-  /* 画布与表面（暖纸感浅色） */
-  --bg: #f5f2ec;
-  --bg-soft: #efeae0;
-  --surface: #fffdf8;
-  --surface-2: #faf6ee;
+  /* 画布与表面（松绿 · 鼠尾草浅色，源自 suno-mimi 配色） */
+  --bg: #eff2e9;              /* sage · 页面底 */
+  --bg-soft: #e7ecdf;
+  --surface: #f8faf4;         /* card · 卡纸 */
+  --surface-2: #f1f4ea;
   --surface-hover: #ffffff;
 
-  /* 文字 */
-  --ink: #16130e;
-  --ink-soft: #4a443b;
-  --ink-mute: #8c8475;
+  /* 文字（松绿墨色系） */
+  --ink: #164c37;             /* pine · 墨色 */
+  --ink-soft: #47564b;
+  --ink-mute: #6d7a68;        /* moss · 灰绿次级 */
 
   /* 线条 */
-  --line: #e6dfd2;
-  --line-soft: #efe9dd;
+  --line: #dbe3d2;            /* 发丝线 */
+  --line-soft: #e4e9d9;
 
-  /* 品牌强调色（淡汝窑天青，青绿调） */
-  --accent: #3f9688;
-  --accent-ink: #267a6c;        /* 浅色底上的链接/文字用，保证对比度 */
-  --accent-soft: rgba(63, 150, 136, 0.13);
-  --accent-line: rgba(63, 150, 136, 0.38);
+  /* 品牌强调色（蕨绿） */
+  --accent: #1b6a4a;          /* fern · 动作 */
+  --accent-ink: #145538;      /* fern-deep · 浅色底上的链接/文字用，保证对比度 */
+  --accent-soft: rgba(27, 106, 74, 0.12);
+  --accent-line: rgba(27, 106, 74, 0.35);
+
+  /* 唯一点缀（猫鼻粉） */
+  --nose: #eda9b8;
 
   /* 代码块底色 */
-  --code-bg: #f3eee4;
+  --code-bg: #eef1e5;
 
-  /* 阴影 */
-  --shadow-sm: 0 1px 2px rgba(28, 22, 14, 0.04);
-  --shadow: 0 2px 6px rgba(28, 22, 14, 0.05), 0 12px 30px rgba(28, 22, 14, 0.06);
-  --shadow-lg: 0 10px 30px rgba(28, 22, 14, 0.10), 0 30px 70px rgba(28, 22, 14, 0.10);
+  /* 阴影（松绿调） */
+  --shadow-sm: 0 1px 2px rgba(22, 50, 37, 0.05);
+  --shadow: 0 2px 6px rgba(22, 50, 37, 0.06), 0 12px 30px rgba(22, 50, 37, 0.07);
+  --shadow-lg: 0 10px 30px rgba(22, 50, 37, 0.12), 0 30px 70px rgba(22, 50, 37, 0.12);
 
   /* 形状与尺度 */
   --radius: 18px;
@@ -64,25 +67,27 @@
 }
 
 [data-theme="dark"] {
-  --bg: #0c0b0a;
-  --bg-soft: #15120e;
-  --surface: #171410;
-  --surface-2: #1d1915;
-  --surface-hover: #211c16;
+  --bg: #0b120d;
+  --bg-soft: #101a13;
+  --surface: #131f17;
+  --surface-2: #18261d;
+  --surface-hover: #1d2c22;
 
-  --ink: #f3eee3;
-  --ink-soft: #b6ab98;
-  --ink-mute: #847a6b;
+  --ink: #e6efe6;
+  --ink-soft: #a9b9a9;
+  --ink-mute: #6d7a68;
 
-  --line: #2a251e;
-  --line-soft: #211d17;
+  --line: #24352a;
+  --line-soft: #1c2a21;
 
-  --accent: #7cc4b6;
-  --accent-ink: #a6e0d4;
-  --accent-soft: rgba(124, 196, 182, 0.16);
-  --accent-line: rgba(124, 196, 182, 0.42);
+  --accent: #3f9d6e;
+  --accent-ink: #7cc9a2;
+  --accent-soft: rgba(63, 157, 110, 0.16);
+  --accent-line: rgba(63, 157, 110, 0.40);
 
-  --code-bg: #13110d;
+  --nose: #eda9b8;
+
+  --code-bg: #0e1711;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.40);
@@ -115,7 +120,7 @@ body {
   overflow-x: hidden;
 }
 
-::selection { background: var(--accent); color: #fff; }
+::selection { background: var(--nose); color: var(--ink); }
 
 a {
   color: inherit;
@@ -156,14 +161,14 @@ h1, h2, h3, h4, h5 {
 /* --------------------------------------------------------- 导航/页头 --- */
 :root {
   --header-h: 70px;
-  --header-bg: rgba(245, 242, 236, 0.72);
-  --header-line: rgba(22, 19, 14, 0.08);
-  --header-ink: #16130e;
+  --header-bg: rgba(239, 242, 233, 0.72);
+  --header-line: rgba(22, 76, 55, 0.10);
+  --header-ink: #164c37;
 }
 [data-theme="dark"] {
-  --header-bg: rgba(12, 11, 10, 0.66);
-  --header-line: rgba(243, 238, 227, 0.10);
-  --header-ink: #f3eee3;
+  --header-bg: rgba(11, 18, 13, 0.66);
+  --header-line: rgba(230, 239, 230, 0.10);
+  --header-ink: #e6efe6;
 }
 
 .site-header {

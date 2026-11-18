@@ -9,12 +9,12 @@ from blog.config import AUTHOR, NAV_ITEMS, SITE_NAME, SINCE_YEAR, SITE_TAGLINE, 
 # 站点 logo：天青色扁平笔记图标（与 favicon.svg 同源），内联到导航栏，避免外部图标缓存。
 LOGO_SVG = (
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">'
-    '<rect width="64" height="64" rx="16" fill="#3f9688"/>'
+    '<rect width="64" height="64" rx="16" fill="#1b6a4a"/>'
     '<rect x="19" y="15" width="26" height="34" rx="4" fill="#ffffff"/>'
-    '<path d="M37 15 h8 v8 z" fill="#bfe0d8"/>'
-    '<rect x="24" y="28" width="16" height="2.8" rx="1.4" fill="#3f9688"/>'
-    '<rect x="24" y="35" width="16" height="2.8" rx="1.4" fill="#3f9688"/>'
-    '<rect x="24" y="42" width="10" height="2.8" rx="1.4" fill="#3f9688"/>'
+    '<path d="M37 15 h8 v8 z" fill="#cfe3d6"/>'
+    '<rect x="24" y="28" width="16" height="2.8" rx="1.4" fill="#1b6a4a"/>'
+    '<rect x="24" y="35" width="16" height="2.8" rx="1.4" fill="#1b6a4a"/>'
+    '<rect x="24" y="42" width="10" height="2.8" rx="1.4" fill="#1b6a4a"/>'
     '</svg>'
 )
 
